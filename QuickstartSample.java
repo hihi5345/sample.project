@@ -3,12 +3,17 @@ import com.google.cloud.language.v1.*;
 import com.google.cloud.language.v1.Document.Type;
 import com.google.cloud.speech.v1.*;
 import com.google.protobuf.ByteString;
+import org.snu.ids.ha.ma.MExpression;
+import org.snu.ids.ha.ma.MorphemeAnalyzer;
 
+
+import javax.management.timer.Timer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+
 
 public class QuickstartSample {
 
@@ -77,6 +82,7 @@ public class QuickstartSample {
             // analyze the syntax in the given text
             AnalyzeSyntaxResponse response = language.analyzeSyntax(request);
             // print the response
+
             for (Token token : response.getTokensList()) {
                 System.out.printf("\tText: %s\n", token.getText().getContent());
                 System.out.printf("\tBeginOffset: %d\n", token.getText().getBeginOffset());
@@ -147,6 +153,25 @@ public class QuickstartSample {
         analyzingEntity(text);
         System.out.println("Syntax Anayzing.");
         analyzingSyntax(text);
+
+        /////어간추출 테스트
+        MorphemeAnalyzer ma = new MorphemeAnalyzer();
+        ma.createLogger(null);
+        Timer timer = new Timer();
+        timer.start();
+        List<MExpression> ret = ma.analyze(text);
+        timer.stop();
+        ret = ma.postProcess(ret);
+        ret = ma.leaveJustBest(ret);
+        List<org.snu.ids.ha.ma.Sentence> stl = ma.divideToSentences(ret);
+        for(int i=0; i<stl.size(); i++){
+            org.snu.ids.ha.ma.Sentence st = stl.get(i);
+            for(int j=0;j<st.size(); j++){
+                System.out.println(st.get(j));
+            }
+
+        }
+        ma.closeLogger();
 
     }
 }
