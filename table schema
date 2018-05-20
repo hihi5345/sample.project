@@ -1,0 +1,27 @@
+
+CREATE TABLE dict
+( 
+	num                integer  NOT NULL ,
+	word               char(20)  NULL ,
+	emotion            char(20)  NULL ,
+	mean               real  NULL ,
+	standard           real  NULL 
+)
+go
+
+ALTER TABLE dict
+	ADD CONSTRAINT [XPKdict] PRIMARY KEY  CLUSTERED ([num] ASC)
+go
+
+
+
+CREATE TABLE mostword
+( 
+	word              char(20)  NOT NULL ,
+	pos                char(20)  NULL 
+)
+go
+
+ALTER TABLE mostword
+	ADD CONSTRAINT [XPKmostword] PRIMARY KEY  CLUSTERED ([word] ASC)
+go
