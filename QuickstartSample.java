@@ -11,6 +11,7 @@ import javax.management.timer.Timer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -113,6 +114,12 @@ public class QuickstartSample {
 
     public static void main(String... args) throws Exception {
 
+        ArrayList<String> output = new ArrayList<>();
+
+
+        DBManager dbManager = new DBManager();
+        dbManager.connect();
+/*
         try (SpeechClient speechClient = SpeechClient.create()) {
 
             // The path to the audio file to transcribe
@@ -153,13 +160,14 @@ public class QuickstartSample {
         analyzingEntity(text);
         System.out.println("Syntax Anayzing.");
         analyzingSyntax(text);
-
+*/
         /////어간추출 테스트
         MorphemeAnalyzer ma = new MorphemeAnalyzer();
         ma.createLogger(null);
         Timer timer = new Timer();
         timer.start();
-        List<MExpression> ret = ma.analyze(text);
+        //List<MExpression> ret = ma.analyze(text);
+        List<MExpression> ret = ma.analyze("분");
         timer.stop();
         ret = ma.postProcess(ret);
         ret = ma.leaveJustBest(ret);
@@ -168,10 +176,35 @@ public class QuickstartSample {
             org.snu.ids.ha.ma.Sentence st = stl.get(i);
             for(int j=0;j<st.size(); j++){
                 System.out.println(st.get(j));
+
+                String[] temp = st.get(j).toString().split("\\+");
+                for(int k=0;k<temp.length;k++){
+                    String[] temp1 = temp[k].split("/");
+                    output.add(temp1[1]);
+                    output.add(temp1[2].replace("]",""));
+                }
+
+
+
+
             }
 
         }
+
+
+        for(int i=0;i<output.size();i = i+2){
+            if(!dbManager.checkStopWord(output.get(i), output.get(i + 1))) {
+                output.remove(i + 1);
+                output.remove(i);
+                i -= 2;
+            }
+        }
+
+        System.out.println(dbManager.extractEmotion(output));
+
         ma.closeLogger();
+        dbManager.doFinal();
 
     }
+
 }
