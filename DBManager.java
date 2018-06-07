@@ -61,9 +61,11 @@ public class DBManager {
         return false;
     }
 
-    public double extractEmotion(ArrayList<String> sample){
-        double sum=0;
-        int count=0;
+    public double extractEmotion(ArrayList<String> sample, ArrayList<Integer> index, ArrayList<String> origin, ArrayList<Integer> originHTI, ArrayList<String> pos){
+        //google natural language의 상태값이 뒤에 세개
+        //앞에 두개는 형태소 분석한 이후
+        double sum = 0;
+        int count = 0;
         try {
             String sql = "select word, mean, emotion from dict";
             stmt = conn.createStatement();
@@ -85,10 +87,34 @@ public class DBManager {
                     }
                     if(i==checkArray.size()-1){
                         count++;
+                        int sign = 1;
+                        int idx = originHTI.get(index.get(sample.indexOf(checkArray.get(checkArray.size() - 2))));
+                        int findNeg = index.get(sample.indexOf(checkArray.get(checkArray.size() - 2)));
+                        int tag = 1;
+                        for(int j=0;j<originHTI.size();j++){
+                            if(originHTI.get(j) == findNeg && pos.get(j).equals("NEG")){
+                                sign = -1;
+                                tag = 0;
+                            }
+                        }
+                        //while(tag == 1){
+
+                       // }
+                        while(tag == 1) {
+                            if(origin.get(idx).contains("않") || origin.get(idx).contains("못") || origin.get(idx).contains("아니") || origin.get(idx).contains("없")){
+                                sign = -1;
+                                break;
+                            } else if(pos.get(idx).equals("ROOT")) {
+                                break;
+                            } else {
+                                idx = originHTI.get(idx);
+                            }
+                        }
+
                         if(emo.equals("POS")){
-                            sum += m/10;
-                        } else {
-                            sum -= m/10;
+                            sum += m * sign / 10;
+                        } else if((emo.equals("NEG"))){
+                            sum -= m * sign / 10;
                         }
                     }
                 }
@@ -99,7 +125,7 @@ public class DBManager {
 
         }
 
-
+        if(count == 0)  return 0;
         return sum/count;
     }
 }
